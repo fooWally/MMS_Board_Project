@@ -1,0 +1,105 @@
+***********************************
+	Board 1/30,31,2/03
+***********************************
+table->dto->dao->
+readcnt: 조회수
+repRoot number(4): 글정렬 (본글댓글 정렬) 
+repStep number(4), 답글간 정렬
+repIndent number(4): 답글 들여쓰기
+select max(num)+1
+num
+
+원래글의 repRoot = num
+답글의 repRoot = 원래글의 repRoot
+
+
+read.do--> readcnt +1
+
+답글 입력할때,
+1.insert
+2.update: in replyStep
+2 cud job -> transaction takes place -> must be with the same connection
+
+
+<%-- <c:forEach items="${list }" var="dto">
+	${dto.num }: <a href="read.do?num=${dto.num}">${dto.title }</a>:${dto.author }
+	:${dto.writeday }:${dto.readcnt }:${dto.repRoot }:${dto.repStep }:${dto.repIndent }<br>
+</c:forEach> --%>
+
+
+한페이지당 보여주는 게시글: 
+paging: 10, 1~10, 11~20,... perPage(num of writings per page)
+counting num of writings
+
+amount: total num of writing = select count(num) from board;
+totalPage: num pages for accomodating all writings
+totalPage = (amount-1)/perPage + 1
+pageLine:보여주는 최대 page수
+===============================
+## 특정페이지에 출력되는 게시글의 시작
+rownum값과 끝나는 rownum값 중요
+curPage: 보고자하는/특정 page
+ 1~10:1page
+11~20:2page
+21~30:3page
+31~40:4page
+41~47:5page
+startNum = (curPage-1)*perPage + 1
+endNum = curPage*perPage 
+if(endNum>amount){  e.g endNum =50 amount=47
+	endNum = amount;
+}
+
+##필요변수: curPage, perPage, amount
+.................................
+# using rownum, you NEED nickname for it; rownum rnum correspondes to startNum
+select * from (
+select rownum rnum, num, title, author, content, to_char(writeday, 'yyyy/mm/dd') writeday, readcnt,
+repIndent from(
+(select * from board order by repRoot desc, repStep asc)
+)) where rnum between ? and ?; 
+
+
+Note that the last line means "rnum between startNum and endNum"
+
+================================
+## pageLine:보여주는 최대 page수
+beginPageNum:페이징처리시 가장 앞에 있는 페이지 번호
+stopPageNum: 페이징처리시 가장 뒤에 있는 페이지 번호
+beginPageNum = ((curPage-1)/10)*10 + 1 ; where pageLine = 10
+stopPageNum  = beginPageNum + pageLine-1 = (((curPage-1)/10)+1)*10
+if(stopPageNum>totalPage){
+	stopPageNum = totalPagNum
+}
+curPage = 5
+beginPageNum = 1
+stopPageNum = 10
+
+curPage = 12
+beginPageNum = 11
+stopPageNum = 20
+
+
+
+<  >
+
+원래글 삭제될때 답글 어떻게 처리?
+사용자별 게시판 활용법 설명. 
+사용자, 운영자(관리자), 경영자
+방문자수/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

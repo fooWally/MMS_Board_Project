@@ -1,0 +1,139 @@
+=================================================
+		Servlet and JSP day4 (1/16)
+=================================================
+-------------------------------------------------
+Test116		MMS components
+Test1162	session: scope and use
+-------------------------------------------------
+
+
+
+
+1.client가 보내준 데이터 획득/가공 (있울때만)
+2.dao객체 생성및 해당 메서드 호출/데이터 획득(있을때만)
+3.데이터 바인딩(application, session, request,  pageContext)
+4.forwarding--> CommandAction pattern으로 작업(모든 command를 묶어 주는 class)
+
+============================================================
+FrontController: kind of command controller
+takes requests from client
+============================================================
+String uri = request.getRequestURI();
+String cPath = request.getContextPath();
+  <servlet>
+  	<servlet-name>fc</servlet-name>
+  	<servlet-class>com.naver.FrontController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servelt-name>fc</servelt-name>
+  	<url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+
+url-pattern directory 타입 대신 확장자로 지정: *.do
+
+
+
+============================================================
+CommandAction class: decides which forwarding way to use
+isRedirect: redirect or dispatcher 
+and 
+where to: 
+============================================================
+
+
+
+
+
+============================================================
+MemberDAO2; uses connection pool instead of connection Driver
+============================================================
+In project explorer: servers->tomcat->context.xml
+1. edit context.xml file as following
+<Resource
+ name ="jdbc/oracle11g"
+ auth ="Container"
+ type ="javax.sql.DataSource"
+ maxTotal = "4" 
+ maxWaitMillis = "5000"
+ driverClassName = "oracle.jdbc.driver.OracleDriver"
+ url = "jdbc:oracle:thin:@localhost:1521:xe"
+ username ="ca2"
+ password ="ca2"
+/>
+auth: tomcat conatiner가 관리
+maxTotal="4"; 4 conns 4명만 connection가능
+인원 초과시 5초 기다림
+
+2.In MemberDAO2, starts with
+private DataSource dataFactory;
+
+	
+public MemberDAO2() {
+	try {
+   Context ctx = new InitialContext();
+			dataFactory = (DataSource) ctx.lookup("java:comp/env/jdbc/oracle11g");
+		} catch (NamingException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+============================================================
+Session : login다룸-> loginCommand class에
+HttpSession sess = request.getSession(); true by default
+request.getSession() returns a current session. if current session does not exist, 
+it will create a new one
+
+scope of Session: time && browser
+
+In Servers->tomcat->web.xml 
+time scope:
+<session-config>
+  <session-timeout>30</session-timeout>
+</session-config>
+request.getSession(true ) id 잇으면 주고 없으면 만들어: =()
+request.getSession(false) id 있으면 그냥 주고 없어도 만들지마
+when to use true or false
+login 이후에 하는 작업에 getSession(false)
+In web.xml session="false" : 처음 login할때
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR" session="false" %>
+
+Session listener: session 생성 감시
+
+
+============================================================
+Implement login in Test116
+1. In FrontController
+-> add LoginUICommand and LoginCommand.
+2. create those new Command classes
+in LoginUICommand; no jobs to do
+but forward job to login.jsp
+in LoginCommand 4 jobs to do:
+get data from client: request
+create MemberDTO obj/MemberDAO2 obj to access DB
+where a method named login(id, age) is applies on dao obj
+create session for login: and setAttr
+forward it to list.do
+3. create login method in MemberDAO2
+
+
+Java Code Examples for javax.servlet.http.HttpServletRequest.getRequestedSessionId() 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
