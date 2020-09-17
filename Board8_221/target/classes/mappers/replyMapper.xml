@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace : mapper가 여러개이고 같은 id를 가진 작업들을 구분하기 위해 
+e.g. insert ,com.naver.member.insert, com.naver.board.insert-->
+<mapper namespace="com.naver.reply">
+	
+	<update id="update">
+		update reply set replytext = #{replytext}, updatedate = sysdate where rno = #{rno}
+	</update>
+	
+	<delete id="delete">
+		delete from reply where rno = #{rno}	
+	</delete>
+	
+	<select id="list" resultType="com.naver.dto.ReplyVO">
+		select * from reply where bno = #{bno} order by rno	desc
+	</select>
+	
+	<!-- <![CDATA[ ]]>: to recognize one long string for sql statement -->
+	<insert id="insert">
+		<![CDATA[
+			insert into reply(rno, bno, replytext, replyer)
+			values(
+					(select NVL2(max(rno), max(rno)+1, 1) from reply), #{bno}, #{replytext}, #{replyer}
+			)]]>
+	</insert>
+	
+
+
+</mapper>
